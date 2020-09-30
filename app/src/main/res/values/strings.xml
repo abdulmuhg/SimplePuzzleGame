@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">SimplePuzzleGame</string>
+    <string name="ulangi">Ulangi</string>
+    <string name="keluar">Keluar</string>
 </resources>
