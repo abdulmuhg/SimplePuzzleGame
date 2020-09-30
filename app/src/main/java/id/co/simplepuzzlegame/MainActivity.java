@@ -2,7 +2,9 @@ package id.co.simplepuzzlegame;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -11,28 +13,26 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
-import android.widget.TextView;
-import android.widget.Toast;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
     public GridLayout gridLayout;
     public int emptySpace;
-    public ArrayList<String> alphabet;
+    public ArrayList<String> answer;
     public ArrayList<String> correctAnswer;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        init();
+        defineCorrectAnswer();
+        startGame();
     }
 
-    public void init(){
-        gridLayout = findViewById(R.id.gridLayout);
-        TextView helper = findViewById(R.id.helper);
+    public void defineCorrectAnswer(){
         correctAnswer = new ArrayList<>();
         correctAnswer.add("A");
         correctAnswer.add("B");
@@ -49,58 +49,44 @@ public class MainActivity extends AppCompatActivity {
         correctAnswer.add("M");
         correctAnswer.add("N");
         correctAnswer.add("O");
-        correctAnswer.add("_");
+        correctAnswer.add(" ");
         Log.i("Correct Answer", String.valueOf(correctAnswer));
-        alphabet = new ArrayList<>();
-        alphabet.add("A");
-        alphabet.add("B");
-        alphabet.add("C");
-        alphabet.add("D");
-        alphabet.add("E");
-        alphabet.add("F");
-        alphabet.add("G");
-        alphabet.add("H");
-        alphabet.add("I");
-        alphabet.add("J");
-        alphabet.add("K");
-        alphabet.add("L");
-        alphabet.add("M");
-        alphabet.add("N");
-        alphabet.add("O");
-        alphabet.add("_");
-        Collections.shuffle(alphabet);
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    public void startGame(){
+        gridLayout = findViewById(R.id.gridLayout);
+        gridLayout.removeAllViews();
+        answer = new ArrayList<>();
+        answer = (ArrayList<String>) correctAnswer.clone();
+        Collections.shuffle(answer);
+
         for (int i = 0; i<16; i++) {
             final Button button = new Button(this);
-            button.getId();
-            button.setText(alphabet.get(i));
-            final int _i = i;
-            if (alphabet.get(i).equals("_")) {
+            button.setBackground(getDrawable(R.drawable.bg_btn));
+            button.setTextColor(getColor(R.color.white));
+            button.setText(answer.get(i));
+            final int  _i = i;
+            if (answer.get(i).equals(" ")) {
                 emptySpace = i;
-                String sEmpty = String.valueOf(emptySpace);
-                helper.setText(sEmpty);
             }
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //Toast.makeText(MainActivity.this, ""+_i, Toast.LENGTH_SHORT).show();
-                    int es = alphabet.indexOf("_");
-                    int top = _i - 4;
-                    int bot = _i + 4;
-                    int left = _i - 1;
-                    int right = _i + 1;
+                    int es = answer.indexOf(" ");
+                    int top =  _i - 4;
+                    int bot =  _i + 4;
+                    int left =  _i - 1;
+                    int right =  _i + 1;
 
                     if (top >= 0 && top == es) {
-                        switchButton(_i, es);
-                        Toast.makeText(MainActivity.this, "Move top", Toast.LENGTH_SHORT).show();
+                        switchButton( _i, es);
                     } else if (es == bot) {
-                        switchButton(_i, es);
-                        Toast.makeText(MainActivity.this, "Move Bot", Toast.LENGTH_SHORT).show();
+                        switchButton( _i, es);
                     } else if (left >= 0 && left == es) {
-                        switchButton(_i, es);
-                        Toast.makeText(MainActivity.this, "Move Left" , Toast.LENGTH_SHORT).show();
+                        switchButton( _i, es);
                     } else if (right == es) {
-                        switchButton(_i, es);
-                        Toast.makeText(MainActivity.this, "Move Right", Toast.LENGTH_SHORT).show();
+                        switchButton( _i, es);
                     }
                 }
             });
@@ -110,25 +96,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void switchButton(int index, int es){
-        Collections.swap(alphabet, index, es);
+        Collections.swap(answer, index, es);
 
         Button emptyBtn = (Button) gridLayout.getChildAt(es);
-        emptyBtn.setText(alphabet.get(es));
+        emptyBtn.setText(answer.get(es));
 
         Button changeBtn = (Button) gridLayout.getChildAt(index);
-        changeBtn.setText(alphabet.get(index));
+        changeBtn.setText(answer.get(index));
 
-        Log.i("Alphabets", String.valueOf(alphabet));
-        check();
+        Log.i("Answer", String.valueOf(answer));
+        if (check()){
+            showSnackBar();
+        }
+    }
+
+    public void showSnackBar(){
+        Snackbar mySnackbar = Snackbar.make(findViewById(R.id.constrainLayout),
+                "Selamat! Anda berhasil menyelesaikan puzzle", Snackbar.LENGTH_INDEFINITE);
+        mySnackbar.setAction("Ulangi", new retryGame());
+        mySnackbar.show();
+    }
+
+    public class retryGame implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+            startGame();
+        }
     }
 
     public boolean check(){
-        if (correctAnswer.equals(alphabet)){
-            Toast.makeText(MainActivity.this, "Congratulation, You Finished the Puzzle!", Toast.LENGTH_SHORT).show();
-            return true;
-        } else {
-            return false;
-        }
+        return correctAnswer.equals(answer);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -140,9 +137,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.retry){
-
+            startGame();
         } else if (item.getItemId() == R.id.exit){
-
+            finish();
         }
         return true;
     }

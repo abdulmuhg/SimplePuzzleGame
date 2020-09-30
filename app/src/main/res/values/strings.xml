@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name">SimplePuzzleGame</string>
+    <string name="app_name">Alphabet Sorting Puzzle</string>
     <string name="ulangi">Ulangi</string>
     <string name="keluar">Keluar</string>
+    <string name="hint">Petunjuk: Susunlah huruf-huruf berikut sesuai abjad</string>
 </resources>
